@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title | upper }}</title> <!-- Title in uppercase -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/style.css"> <!-- External CSS -->
+</head>
+<body class="text-center coloor">
+    <div class="container mt-5">
+        <h2 class="fontt">{{ title | upper }}</h2> <!-- Title in uppercase -->
+        <div class="row mt-4 maincontainer" id="flashcards-container">
+            {% for paragraph in summary %}
+                {% if paragraph %}
+                <div class="col-md-4 flashcard-item">
+                    <div class="thecard">
+                        <div class="inner">
+                            <div class="thefront">
+                                <p class="flashcard-number"></p> <!-- Placeholder for flashcard number -->
+                            </div>
+                            <div class="theback">
+                                <p class="text-content">{{ paragraph }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="download-section mt-4">
+            <button id="download-pdf-btn" class="btn btn-primary">Download Flashcards</button>
+        </div>
+        <a href="/" class="btn btn-secondary mt-3">Back to Home</a>
+    </div>
+
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            const flashcards = document.querySelectorAll('.flashcard-item');
+            flashcards.forEach((card, index) => {
+                const flashcardNumberElement = card.querySelector('.flashcard-number');
+                flashcardNumberElement.textContent = `FLASHCARD ${index + 1}`; // Set flashcard number dynamically
+            });
+
+            const textElements = document.querySelectorAll(".text-content");
+
+
+            textElements.forEach(el => {
+                const text = el.textContent.trim();
+                const sentences = text.split(/\. ?/); // Split by period and optional space
+                el.innerHTML = sentences.map(sentence => sentence ? `<p>${sentence}.</p>` : "").join("");
+            });
+        });
+
+        document.getElementById("download-pdf-btn").addEventListener("click", () => {
+
+            const textElements = document.querySelectorAll(".text-content");
+            const flashcards = Array.from(textElements).map((el, index) => `Flashcard ${index + 1}:\n${el.textContent.trim()}`).join("\n\n");
+
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+
+            const margin = 10;
+            const pageWidth = doc.internal.pageSize.getWidth() - margin * 2;
+            const pageHeight = doc.internal.pageSize.getHeight() - margin * 2;
+
+
+            doc.setFontSize(12);
+            const textHeight = doc.splitTextToSize(flashcards, pageWidth);
+            doc.text(textHeight, margin, margin);
+
+            doc.save("flashcards.pdf");
+        });
+    </script>
+</body>
+</html>
